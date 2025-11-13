@@ -8,9 +8,10 @@ WORKDIR /
 RUN set -xe && \
     apk add --no-cache --virtual .build-tools git g++ build-base linux-headers cmake python3 && \
     apk add --no-cache --virtual .build-deps curl-dev rapidjson-dev pcre2-dev yaml-cpp-dev && \
-    git clone https://github.com/ftk/quickjspp --depth=1 && \
+    git clone https://github.com/ftk/quickjspp && \
     cd quickjspp && \
     git submodule update --init && \
+    git checkout 0c00c48895919fc02da3f191a2da06addeb07f09 && \
     cmake -DCMAKE_BUILD_TYPE=Release . && \
     make quickjs -j $THREADS && \
     install -d /usr/lib/quickjs/ && \
@@ -33,10 +34,11 @@ RUN set -xe && \
     git clone https://github.com/ToruNiina/toml11 --branch="v4.3.0" --depth=1 && \
     cd toml11 && \
     cmake -DCMAKE_CXX_STANDARD=11 . && \
-    make install -j $THREADS && \
-    cd .. && \
-    git clone https://github.com/metacubex/subconverter --depth=1 && \
-    cd subconverter && \
+    make install -j $THREADS
+
+COPY . /subconverter
+
+RUN cd subconverter && \
     [ -n "$SHA" ] && sed -i 's/\(v[0-9]\.[0-9]\.[0-9]\)/\1-'"$SHA"'/' src/version.h;\
     python3 -m ensurepip && \
     python3 -m pip install gitpython && \
